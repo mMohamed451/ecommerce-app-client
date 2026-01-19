@@ -141,8 +141,8 @@ export default function SettingsPage() {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Account Settings */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6">
               Account Settings
             </h2>
             <div className="space-y-4">
@@ -178,8 +178,8 @@ export default function SettingsPage() {
           </div>
 
           {/* Preferences */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6">
               Preferences
             </h2>
             <div className="space-y-4">
@@ -213,8 +213,8 @@ export default function SettingsPage() {
           </div>
 
           {/* Privacy & Security */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6">
               Privacy & Security
             </h2>
             <div className="space-y-4">

@@ -40,12 +40,12 @@ export default function DashboardPage() {
   return (
     <DashboardLayout>
       <div className="max-w-7xl mx-auto">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Welcome, {user?.firstName} {user?.lastName}!
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            Welcome back, <span className="bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">{user?.firstName}</span>!
           </h1>
-          <p className="mt-2 text-gray-600">
-            You are logged in as: <span className="font-medium">{user?.role}</span>
+          <p className="text-lg text-gray-600">
+            You are logged in as: <span className="font-semibold text-primary-600">{user?.role}</span>
           </p>
         </div>
 
@@ -53,14 +53,14 @@ export default function DashboardPage() {
           {isAdmin && (
             <Link
               href="/admin/dashboard"
-              className="bg-blue-50 hover:bg-blue-100 p-6 rounded-lg shadow transition-colors"
+              className="bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 p-6 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-blue-200 group hover:-translate-y-1"
             >
               <div className="flex items-center gap-4">
-                <div className="bg-blue-500 p-3 rounded-lg">
+                <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-xl shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform">
                   <Settings className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-blue-900">Admin Panel</h3>
+                  <h3 className="font-semibold text-blue-900 text-lg">Admin Panel</h3>
                   <p className="text-sm text-blue-700 mt-1">
                     Manage users, vendors, and system settings
                   </p>
