@@ -117,25 +117,89 @@ export function ProductPreview({ product, onAddToCart, onAddToWishlist }: Produc
           )}
         </div>
 
+        {/* Quantity Selector */}
+        {displayStock > 0 && (
+          <div className="flex items-center gap-4">
+            <label className="text-sm font-medium">Quantity:</label>
+            <div className="flex items-center border rounded-lg">
+              <button
+                type="button"
+                className="px-3 py-2 hover:bg-gray-100"
+                onClick={() => {
+                  const currentQty = parseInt((document.getElementById('quantity') as HTMLInputElement)?.value || '1');
+                  if (currentQty > 1) {
+                    (document.getElementById('quantity') as HTMLInputElement).value = (currentQty - 1).toString();
+                  }
+                }}
+              >
+                −
+              </button>
+              <input
+                id="quantity"
+                type="number"
+                min="1"
+                max={displayStock}
+                defaultValue="1"
+                className="w-16 text-center border-0 focus:ring-0"
+              />
+              <button
+                type="button"
+                className="px-3 py-2 hover:bg-gray-100"
+                onClick={() => {
+                  const currentQty = parseInt((document.getElementById('quantity') as HTMLInputElement)?.value || '1');
+                  if (currentQty < displayStock) {
+                    (document.getElementById('quantity') as HTMLInputElement).value = (currentQty + 1).toString();
+                  }
+                }}
+              >
+                +
+              </button>
+            </div>
+            <span className="text-sm text-gray-600">
+              {displayStock} available
+            </span>
+          </div>
+        )}
+
         {/* Actions */}
         <div className="flex gap-4">
           <Button
-            onClick={() => onAddToCart?.(selectedVariation?.id)}
+            onClick={() => {
+              const quantity = parseInt((document.getElementById('quantity') as HTMLInputElement)?.value || '1');
+              onAddToCart?.(selectedVariation?.id);
+            }}
             disabled={displayStock <= 0}
             className="flex-1"
             size="lg"
           >
             <ShoppingCart className="w-5 h-5 mr-2" />
-            Add to Cart
+            {displayStock <= 0 ? 'Out of Stock' : 'Add to Cart'}
           </Button>
           <Button
             variant="outline"
             onClick={onAddToWishlist}
             size="lg"
+            title="Add to wishlist"
           >
             <Heart className="w-5 h-5" />
           </Button>
-          <Button variant="outline" size="lg">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => {
+              if (navigator.share) {
+                navigator.share({
+                  title: product.name,
+                  text: product.shortDescription || product.description,
+                  url: window.location.href,
+                });
+              } else {
+                navigator.clipboard.writeText(window.location.href);
+                // You might want to show a toast here
+              }
+            }}
+            title="Share product"
+          >
             <Share2 className="w-5 h-5" />
           </Button>
         </div>

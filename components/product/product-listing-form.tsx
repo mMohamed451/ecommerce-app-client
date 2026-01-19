@@ -21,12 +21,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { productApi } from '@/lib/api/product';
 import { Category, ProductAttributeInput, ProductVariationInput } from '@/types/product';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { CheckCircle2, Circle, Upload, X } from 'lucide-react';
+import { CheckCircle2, Circle, Upload, X, Plus, Trash2, HelpCircle, Save } from 'lucide-react';
 import { AttributeType } from '@/types/product';
 
 const STEPS = [
@@ -35,6 +36,8 @@ const STEPS = [
   { id: 3, title: 'Shipping & Physical', description: 'Shipping and dimensions' },
   { id: 4, title: 'SEO & Metadata', description: 'Search optimization' },
   { id: 5, title: 'Images & Media', description: 'Product images' },
+  { id: 6, title: 'Attributes', description: 'Product specifications' },
+  { id: 7, title: 'Variations', description: 'Size, color, and other variants' },
 ] as const;
 
 interface ProductListingFormProps {
@@ -231,6 +234,12 @@ export function ProductListingForm({
         setFormData((prev) => ({ ...prev, seo: stepData }));
       }
     } else if (currentStep === 5) {
+      // Images step - no validation required, can skip
+      isValid = true;
+    } else if (currentStep === 6) {
+      // Attributes step - optional, can skip
+      isValid = true;
+    } else if (currentStep === 7) {
       // Final step - submit form
       await handleSubmit();
       return;
@@ -395,48 +404,78 @@ export function ProductListingForm({
           {/* Step 1: Basic Information */}
           {currentStep === 1 && (
             <div className="space-y-4">
-              <Input
-                {...basicInfoForm.register('name')}
-                label="Product Name"
-                error={basicInfoForm.formState.errors.name?.message}
-                placeholder="Enter product name"
-              />
-              <Textarea
-                {...basicInfoForm.register('description')}
-                label="Description"
-                error={basicInfoForm.formState.errors.description?.message}
-                placeholder="Detailed product description"
-                rows={6}
-              />
-              <Textarea
-                {...basicInfoForm.register('shortDescription')}
-                label="Short Description"
-                error={basicInfoForm.formState.errors.shortDescription?.message}
-                placeholder="Brief product summary"
-                rows={3}
-              />
+              <div>
+                <Input
+                  {...basicInfoForm.register('name')}
+                  label="Product Name *"
+                  error={basicInfoForm.formState.errors.name?.message}
+                  placeholder="Enter product name"
+                  maxLength={200}
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  {basicInfoForm.watch('name')?.length || 0} / 200 characters
+                </p>
+              </div>
+              <div>
+                <Textarea
+                  {...basicInfoForm.register('shortDescription')}
+                  label="Short Description"
+                  error={basicInfoForm.formState.errors.shortDescription?.message}
+                  placeholder="Brief product summary (shown in product listings)"
+                  rows={3}
+                  maxLength={500}
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  {basicInfoForm.watch('shortDescription')?.length || 0} / 500 characters
+                </p>
+              </div>
+              <div>
+                <Textarea
+                  {...basicInfoForm.register('description')}
+                  label="Full Description"
+                  error={basicInfoForm.formState.errors.description?.message}
+                  placeholder="Detailed product description"
+                  rows={6}
+                  maxLength={5000}
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  {basicInfoForm.watch('description')?.length || 0} / 5000 characters
+                </p>
+              </div>
               <Select
                 {...basicInfoForm.register('categoryId')}
                 label="Category"
                 error={basicInfoForm.formState.errors.categoryId?.message}
                 options={[
-                  { value: '', label: 'Select a category' },
+                  { value: '', label: 'Select a category (optional)' },
                   ...flattenCategories(categories),
                 ]}
               />
               <div className="grid grid-cols-2 gap-4">
-                <Input
-                  {...basicInfoForm.register('sku')}
-                  label="SKU"
-                  error={basicInfoForm.formState.errors.sku?.message}
-                  placeholder="Product SKU"
-                />
-                <Input
-                  {...basicInfoForm.register('barcode')}
-                  label="Barcode"
-                  error={basicInfoForm.formState.errors.barcode?.message}
-                  placeholder="Product barcode"
-                />
+                <div>
+                  <Input
+                    {...basicInfoForm.register('sku')}
+                    label="SKU"
+                    error={basicInfoForm.formState.errors.sku?.message}
+                    placeholder="Product SKU"
+                  />
+                  <p className="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                    <HelpCircle className="w-3 h-3" />
+                    Stock Keeping Unit (optional)
+                  </p>
+                </div>
+                <div>
+                  <Input
+                    {...basicInfoForm.register('barcode')}
+                    label="Barcode"
+                    error={basicInfoForm.formState.errors.barcode?.message}
+                    placeholder="Product barcode"
+                  />
+                  <p className="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                    <HelpCircle className="w-3 h-3" />
+                    UPC/EAN barcode (optional)
+                  </p>
+                </div>
               </div>
             </div>
           )}
@@ -486,23 +525,29 @@ export function ProductListingForm({
                   placeholder="0"
                 />
               </div>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    {...pricingForm.register('trackInventory')}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm">Track Inventory</span>
-                </label>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    {...pricingForm.register('allowBackorder')}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm">Allow Backorder</span>
-                </label>
+              <div className="space-y-2">
+                <Checkbox
+                  checked={pricingForm.watch('trackInventory')}
+                  onChange={(e) => pricingForm.setValue('trackInventory', e.target.checked)}
+                  label="Track Inventory"
+                />
+                <p className="text-xs text-gray-500 ml-6">
+                  Automatically update stock when orders are placed
+                </p>
+                {pricingForm.watch('trackInventory') && (
+                  <>
+                    <Checkbox
+                      checked={pricingForm.watch('allowBackorder')}
+                      onChange={(e) => pricingForm.setValue('allowBackorder', e.target.checked)}
+                      label="Allow Backorder"
+                    />
+                    {pricingForm.watch('allowBackorder') && (
+                      <p className="text-xs text-gray-500 ml-6">
+                        Allow customers to purchase when out of stock
+                      </p>
+                    )}
+                  </>
+                )}
               </div>
             </div>
           )}
@@ -510,58 +555,72 @@ export function ProductListingForm({
           {/* Step 3: Shipping & Physical */}
           {currentStep === 3 && (
             <div className="space-y-4">
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    {...shippingForm.register('isDigital')}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm">Digital Product</span>
-                </label>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    {...shippingForm.register('requiresShipping')}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm">Requires Shipping</span>
-                </label>
+              <div className="space-y-3">
+                <Checkbox
+                  checked={shippingForm.watch('isDigital')}
+                  onChange={(e) => {
+                    shippingForm.setValue('isDigital', e.target.checked);
+                    if (e.target.checked) {
+                      shippingForm.setValue('requiresShipping', false);
+                    }
+                  }}
+                  label="This is a digital product (downloadable)"
+                />
+                <p className="text-xs text-gray-500 ml-6">
+                  Digital products don't require shipping
+                </p>
+                {!shippingForm.watch('isDigital') && (
+                  <>
+                    <Checkbox
+                      checked={shippingForm.watch('requiresShipping')}
+                      onChange={(e) => shippingForm.setValue('requiresShipping', e.target.checked)}
+                      label="Requires Shipping"
+                    />
+                    <p className="text-xs text-gray-500 ml-6">
+                      Physical products need shipping information
+                    </p>
+                  </>
+                )}
               </div>
-              {shippingForm.watch('requiresShipping') && (
-                <div className="grid grid-cols-4 gap-4">
-                  <Input
-                    {...shippingForm.register('weight', { valueAsNumber: true })}
-                    type="number"
-                    step="0.01"
-                    label="Weight (kg)"
-                    error={shippingForm.formState.errors.weight?.message}
-                    placeholder="0.00"
-                  />
-                  <Input
-                    {...shippingForm.register('length', { valueAsNumber: true })}
-                    type="number"
-                    step="0.01"
-                    label="Length (cm)"
-                    error={shippingForm.formState.errors.length?.message}
-                    placeholder="0.00"
-                  />
-                  <Input
-                    {...shippingForm.register('width', { valueAsNumber: true })}
-                    type="number"
-                    step="0.01"
-                    label="Width (cm)"
-                    error={shippingForm.formState.errors.width?.message}
-                    placeholder="0.00"
-                  />
-                  <Input
-                    {...shippingForm.register('height', { valueAsNumber: true })}
-                    type="number"
-                    step="0.01"
-                    label="Height (cm)"
-                    error={shippingForm.formState.errors.height?.message}
-                    placeholder="0.00"
-                  />
+              {shippingForm.watch('requiresShipping') && !shippingForm.watch('isDigital') && (
+                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-sm font-medium text-blue-900 mb-3">
+                    Shipping Dimensions
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Input
+                      {...shippingForm.register('weight', { valueAsNumber: true })}
+                      type="number"
+                      step="0.01"
+                      label="Weight (kg) *"
+                      error={shippingForm.formState.errors.weight?.message}
+                      placeholder="0.00"
+                    />
+                    <Input
+                      {...shippingForm.register('length', { valueAsNumber: true })}
+                      type="number"
+                      step="0.01"
+                      label="Length (cm)"
+                      error={shippingForm.formState.errors.length?.message}
+                      placeholder="0.00"
+                    />
+                    <Input
+                      {...shippingForm.register('width', { valueAsNumber: true })}
+                      type="number"
+                      step="0.01"
+                      label="Width (cm)"
+                      error={shippingForm.formState.errors.width?.message}
+                      placeholder="0.00"
+                    />
+                    <Input
+                      {...shippingForm.register('height', { valueAsNumber: true })}
+                      type="number"
+                      step="0.01"
+                      label="Height (cm)"
+                      error={shippingForm.formState.errors.height?.message}
+                      placeholder="0.00"
+                    />
+                  </div>
                 </div>
               )}
             </div>
@@ -570,25 +629,47 @@ export function ProductListingForm({
           {/* Step 4: SEO & Metadata */}
           {currentStep === 4 && (
             <div className="space-y-4">
-              <Input
-                {...seoForm.register('metaTitle')}
-                label="Meta Title"
-                error={seoForm.formState.errors.metaTitle?.message}
-                placeholder="SEO title"
-              />
-              <Textarea
-                {...seoForm.register('metaDescription')}
-                label="Meta Description"
-                error={seoForm.formState.errors.metaDescription?.message}
-                placeholder="SEO description"
-                rows={3}
-              />
-              <Input
-                {...seoForm.register('metaKeywords')}
-                label="Meta Keywords"
-                error={seoForm.formState.errors.metaKeywords?.message}
-                placeholder="keyword1, keyword2, keyword3"
-              />
+              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
+                <p className="text-sm text-yellow-800">
+                  <strong>Tip:</strong> SEO fields are optional. If left empty, we'll use your product name and description.
+                </p>
+              </div>
+              <div>
+                <Input
+                  {...seoForm.register('metaTitle')}
+                  label="Meta Title"
+                  error={seoForm.formState.errors.metaTitle?.message}
+                  placeholder="SEO title for search engines"
+                  maxLength={200}
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  {seoForm.watch('metaTitle')?.length || 0} / 200 characters
+                </p>
+              </div>
+              <div>
+                <Textarea
+                  {...seoForm.register('metaDescription')}
+                  label="Meta Description"
+                  error={seoForm.formState.errors.metaDescription?.message}
+                  placeholder="Brief description for search results"
+                  rows={3}
+                  maxLength={500}
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  {seoForm.watch('metaDescription')?.length || 0} / 500 characters
+                </p>
+              </div>
+              <div>
+                <Input
+                  {...seoForm.register('metaKeywords')}
+                  label="Meta Keywords"
+                  error={seoForm.formState.errors.metaKeywords?.message}
+                  placeholder="keyword1, keyword2, keyword3"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Separate keywords with commas
+                </p>
+              </div>
             </div>
           )}
 
@@ -676,23 +757,319 @@ export function ProductListingForm({
             </div>
           )}
 
+          {/* Step 6: Attributes */}
+          {currentStep === 6 && (
+            <div className="space-y-4">
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-4">
+                <p className="text-sm text-blue-800">
+                  <strong>Tip:</strong> Add product specifications like material, brand, warranty, etc.
+                </p>
+              </div>
+              {attributesForm.watch('attributes').length === 0 ? (
+                <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+                  <p className="text-gray-500 mb-4">No attributes added yet</p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => attributesForm.setValue('attributes', [
+                      ...attributesForm.getValues('attributes'),
+                      { name: '', value: '', type: AttributeType.TEXT, displayOrder: attributesForm.getValues('attributes').length }
+                    ])}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Attribute
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {attributesForm.watch('attributes').map((attr, index) => (
+                    <Card key={index} className="p-4">
+                      <div className="grid grid-cols-12 gap-4 items-start">
+                        <div className="col-span-4">
+                          <Input
+                            {...attributesForm.register(`attributes.${index}.name`)}
+                            placeholder="Attribute name (e.g., Material)"
+                            label="Name"
+                          />
+                        </div>
+                        <div className="col-span-5">
+                          <Input
+                            {...attributesForm.register(`attributes.${index}.value`)}
+                            placeholder="Attribute value (e.g., Cotton)"
+                            label="Value"
+                          />
+                        </div>
+                        <div className="col-span-2">
+                          <Select
+                            {...attributesForm.register(`attributes.${index}.type`)}
+                            label="Type"
+                            options={[
+                              { value: AttributeType.TEXT, label: 'Text' },
+                              { value: AttributeType.NUMBER, label: 'Number' },
+                              { value: AttributeType.BOOLEAN, label: 'Boolean' },
+                            ]}
+                          />
+                        </div>
+                        <div className="col-span-1 flex items-end">
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              const attrs = attributesForm.getValues('attributes');
+                              attrs.splice(index, 1);
+                              attributesForm.setValue('attributes', attrs);
+                            }}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => attributesForm.setValue('attributes', [
+                      ...attributesForm.getValues('attributes'),
+                      { name: '', value: '', type: AttributeType.TEXT, displayOrder: attributesForm.getValues('attributes').length }
+                    ])}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Another Attribute
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Step 7: Variations */}
+          {currentStep === 7 && (
+            <div className="space-y-4">
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-4">
+                <p className="text-sm text-blue-800">
+                  <strong>Tip:</strong> Add variations like different sizes, colors, or styles. Each variation can have its own price and stock.
+                </p>
+              </div>
+              {variationsForm.watch('variations').length === 0 ? (
+                <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+                  <p className="text-gray-500 mb-4">No variations added yet</p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => variationsForm.setValue('variations', [
+                      ...variationsForm.getValues('variations'),
+                      {
+                        name: '',
+                        sku: '',
+                        price: 0,
+                        stockQuantity: 0,
+                        weight: 0,
+                        attributes: []
+                      }
+                    ])}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Variation
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {variationsForm.watch('variations').map((variation, index) => (
+                    <Card key={index} className="p-6">
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="font-semibold">Variation {index + 1}</h3>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => {
+                            const vars = variationsForm.getValues('variations');
+                            vars.splice(index, 1);
+                            variationsForm.setValue('variations', vars);
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Remove
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <Input
+                          {...variationsForm.register(`variations.${index}.name`)}
+                          label="Variation Name *"
+                          placeholder="e.g., Small - Red"
+                        />
+                        <Input
+                          {...variationsForm.register(`variations.${index}.sku`)}
+                          label="SKU"
+                          placeholder="Optional SKU"
+                        />
+                      </div>
+                      <div className="grid grid-cols-3 gap-4 mb-4">
+                        <Input
+                          {...variationsForm.register(`variations.${index}.price`, { valueAsNumber: true })}
+                          type="number"
+                          step="0.01"
+                          label="Price *"
+                          placeholder="0.00"
+                        />
+                        <Input
+                          {...variationsForm.register(`variations.${index}.stockQuantity`, { valueAsNumber: true })}
+                          type="number"
+                          label="Stock Quantity *"
+                          placeholder="0"
+                        />
+                        <Input
+                          {...variationsForm.register(`variations.${index}.weight`, { valueAsNumber: true })}
+                          type="number"
+                          step="0.01"
+                          label="Weight (kg)"
+                          placeholder="0.00"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Variation Attributes</label>
+                        {variation.attributes?.map((attr, attrIndex) => (
+                          <div key={attrIndex} className="flex gap-2">
+                            <Input
+                              {...variationsForm.register(`variations.${index}.attributes.${attrIndex}.name`)}
+                              placeholder="Attribute (e.g., Size)"
+                              className="flex-1"
+                            />
+                            <Input
+                              {...variationsForm.register(`variations.${index}.attributes.${attrIndex}.value`)}
+                              placeholder="Value (e.g., Small)"
+                              className="flex-1"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const attrs = variationsForm.getValues(`variations.${index}.attributes`);
+                                attrs.splice(attrIndex, 1);
+                                variationsForm.setValue(`variations.${index}.attributes`, attrs);
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ))}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const attrs = variationsForm.getValues(`variations.${index}.attributes`) || [];
+                            variationsForm.setValue(`variations.${index}.attributes`, [
+                              ...attrs,
+                              { name: '', value: '' }
+                            ]);
+                          }}
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Attribute
+                        </Button>
+                      </div>
+                    </Card>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => variationsForm.setValue('variations', [
+                      ...variationsForm.getValues('variations'),
+                      {
+                        name: '',
+                        sku: '',
+                        price: 0,
+                        stockQuantity: 0,
+                        weight: 0,
+                        attributes: []
+                      }
+                    ])}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Another Variation
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Navigation Buttons */}
           <div className="flex justify-between mt-8">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handlePrevious}
-              disabled={currentStep === 1}
-            >
-              Previous
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handlePrevious}
+                disabled={currentStep === 1}
+              >
+                Previous
+              </Button>
+              {currentStep < STEPS.length && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={async () => {
+                    // Save as draft
+                    try {
+                      const basicInfo = basicInfoForm.getValues();
+                      const pricing = pricingForm.getValues();
+                      const shipping = shippingForm.getValues();
+                      const seo = seoForm.getValues();
+                      const attributes = attributesForm.getValues().attributes;
+                      const variations = variationsForm.getValues().variations;
+
+                      const productData = {
+                        ...basicInfo,
+                        ...pricing,
+                        ...shipping,
+                        ...seo,
+                        status: 'Draft' as const,
+                        categoryId: basicInfo.categoryId || undefined,
+                        attributes: attributes.map((attr, index) => ({
+                          name: attr.name,
+                          value: attr.value,
+                          type: attr.type,
+                          displayOrder: attr.displayOrder || index,
+                        })) as ProductAttributeInput[],
+                        variations: variations.map((variation) => ({
+                          name: variation.name,
+                          sku: variation.sku || undefined,
+                          price: variation.price,
+                          stockQuantity: variation.stockQuantity,
+                          weight: variation.weight,
+                          attributes: variation.attributes.map((attr) => ({
+                            name: attr.name,
+                            value: attr.value,
+                          })),
+                        })) as ProductVariationInput[],
+                      };
+
+                      if (productId) {
+                        await productApi.updateProduct(productId, productData);
+                      } else {
+                        await productApi.createProduct(productData);
+                      }
+                      toast.success('Draft saved successfully');
+                    } catch (error: any) {
+                      toast.error(error.message || 'Failed to save draft');
+                    }
+                  }}
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Draft
+                </Button>
+              )}
+            </div>
             <Button
               type="button"
               onClick={handleNext}
               isLoading={isSubmitting}
               disabled={isSubmitting}
             >
-              {currentStep === STEPS.length ? 'Submit' : 'Next'}
+              {currentStep === STEPS.length ? 'Publish Product' : 'Next'}
             </Button>
           </div>
         </CardContent>

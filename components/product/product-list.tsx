@@ -42,7 +42,8 @@ export function ProductList({ vendorId, onEdit, onDelete }: ProductListProps) {
   });
 
   const handleDelete = async (productId: string) => {
-    if (confirm('Are you sure you want to delete this product?')) {
+    // Use a more user-friendly confirmation
+    if (window.confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
       try {
         await productApi.deleteProduct(productId);
         toast.success('Product deleted successfully');
@@ -79,7 +80,7 @@ export function ProductList({ vendorId, onEdit, onDelete }: ProductListProps) {
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <Input
-            placeholder="Search products..."
+            placeholder="Search products by name, SKU, or description..."
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -101,7 +102,7 @@ export function ProductList({ vendorId, onEdit, onDelete }: ProductListProps) {
             { value: ProductStatus.ARCHIVED, label: 'Archived' },
           ]}
         />
-        <Button onClick={() => router.push('/vendor/products/new')}>
+        <Button onClick={() => router.push('/vendor/products/new')} className="whitespace-nowrap">
           <Plus className="w-4 h-4 mr-2" />
           Add Product
         </Button>

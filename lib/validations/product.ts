@@ -219,10 +219,109 @@ export const createProductSchema = z
 
 export type CreateProductFormData = z.infer<typeof createProductSchema>;
 
-// Update Product Schema
-export const updateProductSchema = createProductSchema.partial().required({
-  name: true,
-  price: true,
-});
+// Update Product Schema - make all fields optional except name and price
+export const updateProductSchema = z
+  .object({
+    name: z
+      .string()
+      .min(2, 'Product name must be at least 2 characters')
+      .max(200, 'Product name must be less than 200 characters'),
+    price: z
+      .number()
+      .positive('Price must be greater than 0')
+      .max(999999.99, 'Price is too high'),
+    description: z
+      .string()
+      .max(5000, 'Description must be less than 5000 characters')
+      .optional()
+      .or(z.literal('')),
+    shortDescription: z
+      .string()
+      .max(500, 'Short description must be less than 500 characters')
+      .optional()
+      .or(z.literal('')),
+    categoryId: z.string().uuid('Invalid category').optional().or(z.literal('')),
+    sku: z
+      .string()
+      .max(100, 'SKU must be less than 100 characters')
+      .optional()
+      .or(z.literal('')),
+    barcode: z
+      .string()
+      .max(100, 'Barcode must be less than 100 characters')
+      .optional()
+      .or(z.literal('')),
+    compareAtPrice: z
+      .number()
+      .positive('Compare at price must be greater than 0')
+      .max(999999.99, 'Compare at price is too high')
+      .optional(),
+    costPrice: z
+      .number()
+      .positive('Cost price must be greater than 0')
+      .max(999999.99, 'Cost price is too high')
+      .optional(),
+    stockQuantity: z
+      .number()
+      .int('Stock quantity must be a whole number')
+      .min(0, 'Stock quantity cannot be negative')
+      .optional(),
+    lowStockThreshold: z
+      .number()
+      .int('Low stock threshold must be a whole number')
+      .min(0, 'Low stock threshold cannot be negative')
+      .optional(),
+    trackInventory: z.boolean().optional(),
+    allowBackorder: z.boolean().optional(),
+    isDigital: z.boolean().optional(),
+    requiresShipping: z.boolean().optional(),
+    weight: z
+      .number()
+      .positive('Weight must be greater than 0')
+      .max(9999.99, 'Weight is too high')
+      .optional(),
+    length: z
+      .number()
+      .positive('Length must be greater than 0')
+      .max(9999.99, 'Length is too high')
+      .optional(),
+    width: z
+      .number()
+      .positive('Width must be greater than 0')
+      .max(9999.99, 'Width is too high')
+      .optional(),
+    height: z
+      .number()
+      .positive('Height must be greater than 0')
+      .max(9999.99, 'Height is too high')
+      .optional(),
+    metaTitle: z
+      .string()
+      .max(200, 'Meta title must be less than 200 characters')
+      .optional()
+      .or(z.literal('')),
+    metaDescription: z
+      .string()
+      .max(500, 'Meta description must be less than 500 characters')
+      .optional()
+      .or(z.literal('')),
+    metaKeywords: z
+      .string()
+      .max(500, 'Meta keywords must be less than 500 characters')
+      .optional()
+      .or(z.literal('')),
+  })
+  .refine(
+    (data) => {
+      if (data.compareAtPrice && data.price) {
+        return data.compareAtPrice > data.price;
+      }
+      return true;
+    },
+    {
+      message: 'Compare at price must be greater than regular price',
+      path: ['compareAtPrice'],
+    }
+  );
 
 export type UpdateProductFormData = z.infer<typeof updateProductSchema>;

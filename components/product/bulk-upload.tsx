@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { productApi } from '@/lib/api/product';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, FileSpreadsheet, Download, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Upload, FileSpreadsheet, Download, AlertCircle, CheckCircle2, Info } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function BulkUpload() {
@@ -79,17 +80,30 @@ export function BulkUpload() {
           <CardTitle>Bulk Product Upload</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-start gap-2">
+              <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-blue-800">
+                <p className="font-medium mb-1">How to use bulk upload:</p>
+                <ol className="list-decimal list-inside space-y-1 ml-2">
+                  <li>Download the CSV template below</li>
+                  <li>Fill in your product information following the template format</li>
+                  <li>Upload the completed CSV file</li>
+                  <li>Review any errors and fix them if needed</li>
+                </ol>
+              </div>
+            </div>
+          </div>
           <div>
-            <p className="text-sm text-gray-600 mb-4">
-              Upload a CSV file to import multiple products at once. Download the template
-              below to see the required format.
-            </p>
             <div className="flex gap-4">
               <Button variant="outline" onClick={handleExport}>
                 <Download className="w-4 h-4 mr-2" />
-                Download Template
+                Download CSV Template
               </Button>
             </div>
+            <p className="text-xs text-gray-500 mt-2">
+              The template includes all required fields and example data
+            </p>
           </div>
 
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-8">
@@ -113,19 +127,41 @@ export function BulkUpload() {
           </div>
 
           {file && (
-            <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <FileSpreadsheet className="w-5 h-5 text-gray-600" />
+                  <div>
+                    <p className="font-medium text-sm">{file.name}</p>
+                    <p className="text-xs text-gray-500">
+                      {(file.size / 1024).toFixed(2)} KB
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setFile(null);
+                    setUploadResult(null);
+                  }}
+                >
+                  Remove
+                </Button>
+              </div>
+              <div className="flex items-center gap-4">
+                <Checkbox
                   checked={skipErrors}
                   onChange={(e) => setSkipErrors(e.target.checked)}
-                  className="w-4 h-4"
+                  label="Skip errors and continue importing"
                 />
-                <span className="text-sm">Skip errors and continue</span>
-              </label>
-              <Button onClick={handleUpload} isLoading={isUploading}>
+                <p className="text-xs text-gray-500 flex-1">
+                  When enabled, rows with errors will be skipped and the import will continue with valid rows
+                </p>
+              </div>
+              <Button onClick={handleUpload} isLoading={isUploading} className="w-full">
                 <FileSpreadsheet className="w-4 h-4 mr-2" />
-                Upload Products
+                {isUploading ? 'Uploading...' : 'Upload Products'}
               </Button>
             </div>
           )}
