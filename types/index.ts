@@ -52,3 +52,6 @@ export * from './profile';
 
 // Re-export vendor types
 export * from './vendor';
+
+// Re-export product types
+export * from './product';
