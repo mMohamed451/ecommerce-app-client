@@ -49,3 +49,6 @@ export interface FilterParams {
 
 // Re-export profile types
 export * from './profile';
+
+// Re-export vendor types
+export * from './vendor';

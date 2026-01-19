@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
-import '../globals.css';
 import { Providers } from '../providers';
+import { LocaleHtmlAttributes } from './locale-html-attributes';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -25,12 +25,13 @@ export default async function LocaleLayout({
   const direction = locale === 'ar' ? 'rtl' : 'ltr';
 
   return (
-    <html lang={locale} dir={direction} suppressHydrationWarning>
-      <body className={inter.variable}>
+    <>
+      <LocaleHtmlAttributes locale={locale} direction={direction} />
+      <div className={inter.variable}>
         <NextIntlClientProvider messages={messages}>
           <Providers>{children}</Providers>
         </NextIntlClientProvider>
-      </body>
-    </html>
+      </div>
+    </>
   );
 }
