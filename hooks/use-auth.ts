@@ -20,7 +20,7 @@ export function useAuth() {
   const { user, isAuthenticated, setUser, setTokens, logout: logoutStore } = useAuthStore();
   
   // Use ref to store redirect path across mutation calls
-  const redirectRef = useRef<string | undefined>();
+  const redirectRef = useRef<string | undefined>(undefined);
 
   // Login mutation
   const loginMutation = useMutation({

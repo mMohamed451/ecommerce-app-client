@@ -55,3 +55,6 @@ export * from './vendor';
 
 // Re-export product types
 export * from './product';
+
+// Re-export cart types
+export * from './cart';
