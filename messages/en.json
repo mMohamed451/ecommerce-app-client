@@ -1,0 +1,52 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "previous": "Previous",
+    "next": "Next",
+    "home": "Home",
+    "about": "About",
+    "contact": "Contact"
+  },
+  "nav": {
+    "products": "Products",
+    "categories": "Categories",
+    "vendors": "Vendors",
+    "cart": "Cart",
+    "wishlist": "Wishlist",
+    "account": "Account",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot Password?",
+    "rememberMe": "Remember me",
+    "dontHaveAccount": "Don't have an account?",
+    "alreadyHaveAccount": "Already have an account?",
+    "signIn": "Sign In",
+    "signUp": "Sign Up"
+  },
+  "products": {
+    "title": "Products",
+    "addToCart": "Add to Cart",
+    "addToWishlist": "Add to Wishlist",
+    "viewDetails": "View Details",
+    "price": "Price",
+    "inStock": "In Stock",
+    "outOfStock": "Out of Stock"
+  }
+}
